@@ -1,6 +1,6 @@
 import subprocess, sys, json, socket
 import xml.etree.ElementTree as ET
-
+from datetime import datetime
 
 def procurar_host(raiz):
     host = raiz.find("host")
@@ -86,6 +86,15 @@ def descobrir_ip():
     
     return ip_local
 
+def carregar_historico(nome_arquivo):
+    try:
+        with open(nome_arquivo, "r", encoding="utf-8") as arquivo:
+            historico = json.load(arquivo)
+            
+        return historico
+    except FileNotFoundError:
+        return[]
+
 inventario = []
 
 meu_ip = descobrir_ip()
@@ -148,3 +157,19 @@ print("Portas alteradas", portas_alteradas )
 
 with open("inventario.json", "w", encoding="utf-8") as arquivo_json:
     json.dump(inventario, arquivo_json, indent=4)   
+    
+    
+data_varredura = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+registro = {
+    "data": data_varredura,
+    "ip": meu_ip,
+    "portas": inventario
+    }
+
+historico = carregar_historico("historico.json")
+
+historico.append(registro)
+
+with open("historico.json", "w", encoding="utf-8") as arquivo:
+    json.dump(historico, arquivo, indent=4)
