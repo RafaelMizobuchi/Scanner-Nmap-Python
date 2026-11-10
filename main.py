@@ -1,4 +1,4 @@
-import subprocess, sys, json, socket
+import subprocess, sys, json, socket, argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
@@ -97,7 +97,25 @@ def carregar_historico(nome_arquivo):
 
 inventario = []
 
-meu_ip = descobrir_ip()
+def obter_argumentos():
+    parser = argparse.ArgumentParser(
+        description="Network Scanner & Service Inventory"
+    )
+
+    parser.add_argument(
+        "--target",
+        type=str,
+        default=None,
+        help="IP do dispositivo que será analisado"
+    )
+
+    return parser.parse_args()
+
+argumentos = obter_argumentos()
+
+meu_ip = argumentos.target if argumentos.target is not None else descobrir_ip()
+
+nome_inventario = f"inventario_{meu_ip}.json"
 
 resultado = subprocess.run([
 "nmap",
@@ -147,7 +165,7 @@ for numero in portas:
 
     inventario.append(dados_porta)
 
-dados_anteriores = inventario_anterior("inventario.json")
+dados_anteriores = inventario_anterior(nome_inventario)
 
 novas_portas, portas_removidas, portas_alteradas = comparar_portas(dados_anteriores, inventario)
 
@@ -155,8 +173,8 @@ print("Portas novas:", novas_portas)
 print("Portas removidas:", portas_removidas)
 print("Portas alteradas", portas_alteradas )
 
-with open("inventario.json", "w", encoding="utf-8") as arquivo_json:
-    json.dump(inventario, arquivo_json, indent=4)   
+with open(nome_inventario, "w", encoding="utf-8") as arquivo_json:
+    json.dump(inventario, arquivo_json, indent=4)  
     
     
 data_varredura = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -173,3 +191,5 @@ historico.append(registro)
 
 with open("historico.json", "w", encoding="utf-8") as arquivo:
     json.dump(historico, arquivo, indent=4)
+    
+    

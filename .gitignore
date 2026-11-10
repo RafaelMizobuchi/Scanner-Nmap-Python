@@ -3,5 +3,5 @@ __pycache__/
 .venv/
 venv/
 scan_result.xml
-inventario.json
+inventario*.json
 historico.json
