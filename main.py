@@ -1,4 +1,4 @@
-import subprocess, sys, json, socket, argparse
+import subprocess, sys, json, socket, argparse, ipaddress
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
@@ -101,7 +101,7 @@ def obter_argumentos():
     parser = argparse.ArgumentParser(
         description="Network Scanner & Service Inventory"
     )
-
+    
     parser.add_argument(
         "--target",
         type=str,
@@ -111,9 +111,19 @@ def obter_argumentos():
 
     return parser.parse_args()
 
+def validar_ip(endereco):
+    
+    try:
+        ip = ipaddress.IPv4Address(endereco)
+        return str(ip)
+    
+    except ValueError:
+        print(f"IP {endereco} inválido")
+        sys.exit(1)
+        
 argumentos = obter_argumentos()
-
 meu_ip = argumentos.target if argumentos.target is not None else descobrir_ip()
+meu_ip = validar_ip(meu_ip)
 
 nome_inventario = f"inventario_{meu_ip}.json"
 
